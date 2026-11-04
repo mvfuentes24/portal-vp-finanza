@@ -196,7 +196,33 @@ psql -U portal_app -d portal_finanzas -f database/seed.sql
 
 ### 5. Levantar el backend
 
-*Pendiente.*
+Desde la raíz del proyecto, crea el entorno virtual:
+
+```bash
+cd backend
+python -m venv .venv
+```
+
+Activa el entorno virtual:
+
+```bash
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# macOS / Linux
+source .venv/bin/activate
+```
+
+> En Windows, si PowerShell indica que la ejecución de scripts está deshabilitada, ejecuta una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` y vuelve a activar el entorno.
+
+Instala las dependencias e inicia el servidor:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+La API queda disponible en `http://localhost:8000`. Para verificar que funciona y se conecta a la base de datos, abre `http://localhost:8000/health`; la documentación interactiva está en `http://localhost:8000/docs`.
 
 ### 6. Levantar el frontend
 

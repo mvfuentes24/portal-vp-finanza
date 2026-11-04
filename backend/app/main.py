@@ -1,0 +1,35 @@
+"""Punto de entrada de la API del Portal VP de Finanzas."""
+
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.database import get_db
+
+app = FastAPI(
+    title="Portal VP de Finanzas",
+    description="API interna de la Vicepresidencia de Finanzas",
+    version="0.1.0",
+)
+
+# Solo el frontend configurado puede consumir la API desde el navegador
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.frontend_origin],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH"],
+    allow_headers=["Content-Type"],
+)
+
+
+@app.get("/health", tags=["Sistema"])
+def health(db: Session = Depends(get_db)) -> dict[str, str]:
+    """Verifica que la API está en ejecución y puede conectarse a la base de datos."""
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception:
+        # No se devuelve el detalle del error para no exponer información interna
+        raise HTTPException(status_code=503, detail="Base de datos no disponible")
+    return {"status": "ok", "database": "ok"}
