@@ -127,6 +127,8 @@ Cada módulo del backend contiene:
 
 ## Requisitos previos
 
+Instala lo siguiente antes de comenzar:
+
 - [Git](https://git-scm.com/)
 - [Python](https://www.python.org/) 3.11 o superior
 - [Node.js](https://nodejs.org/) (versión LTS)
@@ -141,7 +143,26 @@ git clone https://github.com/mvfuentes24/portal-vp-finanza.git
 cd portal-vp-finanza
 ```
 
-### 2. Configurar las variables de entorno
+### 2. Crear la base de datos
+
+Conéctate a PostgreSQL como administrador:
+
+```bash
+psql -U postgres
+```
+
+Ejecuta los siguientes comandos. Cuando se solicite, define una contraseña para el usuario `portal_app` y anótala:
+
+```sql
+CREATE ROLE portal_app WITH LOGIN;
+\password portal_app
+CREATE DATABASE portal_finanzas WITH OWNER = portal_app ENCODING = 'UTF8' TEMPLATE = template0;
+\q
+```
+
+### 3. Configurar las variables de entorno
+
+Crea el archivo `.env` a partir de la plantilla:
 
 ```bash
 # Windows (PowerShell)
@@ -151,51 +172,39 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-Completa los valores en `.env`:
+Abre `.env` y completa:
 
-| Variable | Descripción |
+| Variable | Valor |
 |---|---|
-| `DB_HOST` | Servidor de PostgreSQL (por defecto `localhost`) |
-| `DB_PORT` | Puerto de PostgreSQL (por defecto `5432`) |
-| `DB_NAME` | Nombre de la base de datos |
-| `DB_USER` | Usuario de la aplicación (sin privilegios de administrador) |
-| `DB_PASSWORD` | Contraseña del usuario de la aplicación |
-| `JWT_SECRET_KEY` | Clave secreta para firmar los tokens de sesión (larga y aleatoria) |
-| `JWT_ALGORITHM` | Algoritmo de firma del token |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Duración de la sesión, en minutos |
-| `FRONTEND_ORIGIN` | URL del frontend autorizada para consumir la API (CORS) |
+| `DB_PASSWORD` | La contraseña definida para `portal_app` en el paso 2 |
+| `JWT_SECRET_KEY` | Una cadena aleatoria larga (ver comando abajo) |
 
-> **Importante:** el archivo `.env` contiene secretos y **nunca** debe subirse al repositorio. Está excluido mediante `.gitignore`.
+Las demás variables ya tienen valores por defecto válidos para ejecución local.
 
-### 3. Crear la base de datos
+Para generar `JWT_SECRET_KEY`:
 
-Conectado a PostgreSQL como administrador (`psql -U postgres`):
-
-```sql
-CREATE ROLE portal_app WITH LOGIN;
-\password portal_app
-CREATE DATABASE portal_finanzas WITH OWNER = portal_app ENCODING = 'UTF8' TEMPLATE = template0;
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-- La aplicación usa un usuario propio (`portal_app`) en lugar del administrador, siguiendo el **principio de mínimo privilegio**.
-- `ENCODING = 'UTF8'` y `TEMPLATE = template0` garantizan el soporte de tildes y ñ, independientemente de la configuración regional del servidor.
-
-### 4. Crear las tablas y cargar los datos semilla
+### 4. Crear las tablas y cargar los datos
 
 ```bash
 psql -U portal_app -d portal_finanzas -f database/01_schema.sql
 psql -U portal_app -d portal_finanzas -f database/02_seed.sql
 ```
 
-*Pendiente: scripts en desarrollo.*
-
 ### 5. Levantar el backend
 
-*Pendiente.* Servidor por defecto en `http://localhost:8000`.
+*Pendiente.*
 
 ### 6. Levantar el frontend
 
-*Pendiente.* Aplicación por defecto en `http://localhost:5173`.
+*Pendiente.*
+
+### 7. Abrir el portal
+
+*Pendiente.* Ingresa con alguno de los [usuarios de prueba](#usuarios-de-prueba).
 
 ## Usuarios de prueba
 
