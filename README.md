@@ -93,8 +93,8 @@ portal-vp-finanza/
 │       ├── components/              # Componentes compartidos
 │       └── App.tsx                  # Definición de rutas
 ├── database/
-│   ├── 01_schema.sql                # Creación de tablas, llaves y restricciones
-│   └── 02_seed.sql                  # Datos ficticios de prueba
+│   ├── schema.sql                   # Creación de tablas, llaves y restricciones
+│   └── seed.sql                     # Datos ficticios de prueba
 ├── docs/
 │   ├── decisiones-tecnicas.md       # Justificación de decisiones del proyecto
 │   └── registro-ai.md               # Registro de uso de inteligencia artificial
@@ -190,8 +190,8 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 ### 4. Crear las tablas y cargar los datos
 
 ```bash
-psql -U portal_app -d portal_finanzas -f database/01_schema.sql
-psql -U portal_app -d portal_finanzas -f database/02_seed.sql
+psql -U portal_app -d portal_finanzas -f database/schema.sql
+psql -U portal_app -d portal_finanzas -f database/seed.sql
 ```
 
 ### 5. Levantar el backend
