@@ -3,9 +3,6 @@
 -- Ejecutar DESPUÉS de schema.sql:
 --   psql -U portal_app -d portal_finanzas -f database/seed.sql
 --
--- Los correos usan el dominio reservado
--- ".example" (RFC 2606), que no pertenece a ninguna organización real.
---
 -- =====================================================================
 
 SET client_encoding = 'UTF8';
@@ -25,10 +22,11 @@ INSERT INTO niveles (id, nombre) VALUES
     (1, 'Junior'),
     (2, 'Semi-senior'),
     (3, 'Senior'),
-    (4, 'Gerente');
+    (4, 'Gerente'),
+    (5, 'Vicepresidente');
 
 -- =====================================================================
--- 2. DEPARTAMENTOS
+-- 2. DEPARTAMENTOS DE LA VP DE FINANZAS
 -- =====================================================================
 
 INSERT INTO departamentos (id, nombre, descripcion) VALUES
@@ -38,10 +36,13 @@ INSERT INTO departamentos (id, nombre, descripcion) VALUES
     (4, 'Contabilidad',             'Registra las operaciones y elabora los estados financieros');
 
 -- =====================================================================
--- 3. CARGOS (4 por departamento: un cargo por nivel)
+-- 3. CARGOS
+--    Cada departamento tiene 4 cargos, uno por nivel.
 -- =====================================================================
 
 INSERT INTO cargos (id, nombre, nivel_id, departamento_id) VALUES
+    -- Vicepresidencia
+    (17, 'Vicepresidente de Finanzas',                 5, NULL),
     -- Planificación Financiera
     (1,  'Gerente de Planificación Financiera',        4, 1),
     (2,  'Analista de Planificación Financiera Senior', 3, 1),
@@ -91,9 +92,14 @@ INSERT INTO funciones (id, descripcion) VALUES
     (16, 'Elaborar los estados financieros'),
     (17, 'Registrar los asientos contables'),
     (18, 'Preparar las declaraciones de impuestos'),
-    (19, 'Realizar el cierre contable mensual');
+    (19, 'Realizar el cierre contable mensual'),
+    -- Vicepresidencia
+    (20, 'Definir la estrategia financiera de la Vicepresidencia'),
+    (21, 'Aprobar el presupuesto anual');
 
 INSERT INTO cargo_funciones (cargo_id, funcion_id) VALUES
+    -- Vicepresidente
+    (17, 1), (17, 20), (17, 21),
     -- Gerentes: funciones comunes de gerencia
     (1, 1), (1, 2), (1, 3),
     (5, 1), (5, 2), (5, 3),
@@ -117,12 +123,15 @@ INSERT INTO cargo_funciones (cargo_id, funcion_id) VALUES
     (16, 17), (16, 19);
 
 -- =====================================================================
--- 5. COLABORADORES (10 por departamento)
+-- 5. COLABORADORES
+--    Vicepresidente + 10 por departamento.
 --    Por departamento: 1 gerente, 2 senior, 3 semi-senior, 4 junior.
 --    Cada departamento tiene un colaborador inactivo.
 -- =====================================================================
 
 INSERT INTO colaboradores (id, nombre, apellido, correo, pais_id, fecha_ingreso, estado, cargo_id) VALUES
+    -- Vicepresidencia
+    (41, 'Elisa',     'Montero',   'elisa.montero@vpfinanzas.example',      1, '2012-02-06', 'activo',   17),
     -- Planificación Financiera
     (1,  'Andrea',    'Salazar',   'andrea.salazar@vpfinanzas.example',     1, '2016-03-14', 'activo',   1),
     (2,  'Ricardo',   'Méndez',    'ricardo.mendez@vpfinanzas.example',     1, '2018-07-02', 'activo',   2),
@@ -196,7 +205,7 @@ INSERT INTO cajeros (id, nombre, tienda_id) VALUES
     (11, 'Marcos Ledesma',     1),
     (12, 'Rocío Funes',        5);
 
-
+-- registrado_por queda en NULL: estos cierres provienen de la carga
 -- inicial del dataset, no de un usuario del portal.
 INSERT INTO cierres_caja (id, tienda_id, cajero_id, fecha, monto_declarado, monto_sistema) VALUES
     ( 1, 6,  4, '2026-06-03',   959.20,   961.79),
