@@ -1,274 +1,196 @@
-# Portal VP de Finanzas
+# Portal Corporativo de Finanzas
 
-![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
-![Backend](https://img.shields.io/badge/backend-FastAPI-009688)
-![Frontend](https://img.shields.io/badge/frontend-React-61DAFB)
-![Base de datos](https://img.shields.io/badge/BD-PostgreSQL-336791)
-
-Portal interno para la Vicepresidencia de Finanzas que centraliza la consulta de la estructura organizacional, controla el acceso a la información según el rol y el departamento de cada usuario, e incorpora un detector de anomalías en cierres de caja con gestión y trazabilidad de alertas.
-
----
-
-## Descripción del proyecto
-
-El equipo de Finanzas trabaja a diario con información sensible: estructura organizacional, datos de colaboradores y procesos de control. Este portal ofrece un punto único de acceso a esa información, donde cada usuario ve y opera **únicamente lo que su rol y departamento le permiten**.
+Portal web interno para la Vicepresidencia de Finanzas. Permite consultar la estructura de la
+organización (departamentos, cargos y colaboradores) y detectar anomalías en los cierres de caja
+de las tiendas, con acceso controlado por roles.
 
 
-## Características
+## Funcionalidades
 
-- Inicio de sesión real con contraseñas almacenadas de forma segura
-- Control de acceso por rol y departamento, validado en el backend
-- Consulta de departamentos, colaboradores y cargos desde una base de datos relacional normalizada
-- Módulos visibles según el rol del usuario autenticado
-- Detector de anomalías en cierres de caja con historial auditable de alertas *(en desarrollo)*
-- Variables sensibles fuera del código fuente mediante `.env`
-- Documentación interactiva de la API generada automáticamente
-
-### Roles del sistema
-
-| Rol | Alcance |
+| Módulo | Descripción |
 |---|---|
-| **Administrador** | Acceso a todos los departamentos y módulos |
-| **Jefe de Departamento** | Acceso solo a los datos y módulos de su departamento |
-| **Colaborador** | Solo lectura de información limitada de su perfil y departamento |
+| Inicio de sesión | Acceso con correo y contraseña. La sesión se guarda en una cookie `httpOnly`. |
+| Organización | Departamentos de la Vicepresidencia y los colaboradores de cada uno. |
+| Cargos | Ficha de cada cargo: nivel, departamento, funciones y colaboradores que lo ocupan. |
+| Cierres de caja | Registro de cierres y detección automática de anomalías: diferencias fuera de rango, posible transposición de dígitos y reincidencia de un cajero. Las alertas se gestionan con un historial de cambios. |
 
-### Módulos del portal
+### Roles
 
-| Módulo | Tipo | Descripción |
-|---|---|---|
-| **Organización** | Consulta | Departamentos de la VP y sus colaboradores |
-| **Cargos** | Consulta | Ficha de cada cargo con sus funciones y nivel |
-| **Cierres de caja** | Proceso de negocio | Registro de cierres, detección automática de anomalías y gestión de alertas |
-
-### Detector de anomalías en cierres de caja
-
-Cada cierre de caja compara el monto declarado por el cajero con el monto registrado por el sistema. El detector aplica las siguientes reglas:
-
-- **Diferencia fuera de rango:** la diferencia entre ambos montos supera el umbral permitido.
-- **Transposición de dígitos:** los montos contienen los mismos dígitos con dos de ellos intercambiados (por ejemplo, 1250 frente a 1520).
-- **Reincidencia:** un mismo cajero acumula varias anomalías.
-
-Cada anomalía genera una alerta que puede estar **pendiente**, **revisada** o **descartada**. Cada cambio de estado queda registrado en un historial con el usuario que lo gestionó, la fecha y un comentario.
-
-*Los parámetros de cada regla se documentarán al completar el módulo.*
-
-## Tecnologías usadas
-
-| Capa | Tecnología | Propósito |
-|---|---|---|
-| Backend | Python + FastAPI | API REST, autenticación y lógica de negocio |
-| Base de datos | PostgreSQL | Almacenamiento relacional |
-| Frontend | React + TypeScript (Vite) | Interfaz de usuario |
-
-La justificación de cada elección se encuentra en [docs/decisiones-tecnicas.md](docs/decisiones-tecnicas.md).
-
-## Estructura del proyecto
-
-El proyecto se organiza **por módulos**: cada funcionalidad del portal agrupa sus propias rutas, lógica, acceso a datos y validaciones. Los elementos compartidos (configuración, conexión a la base de datos y seguridad) viven en `core/`.
-
-> Estructura planificada. Se actualizará a medida que avance el desarrollo.
-
-```
-portal-vp-finanza/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                  # Inicialización de la aplicación
-│   │   ├── core/
-│   │   │   ├── config.py            # Lectura y validación de variables de entorno
-│   │   │   ├── database.py          # Conexión a PostgreSQL
-│   │   │   ├── security.py          # Hash de contraseñas y tokens JWT
-│   │   │   └── permissions.py       # Verificación de rol y departamento
-│   │   └── modules/
-│   │       ├── auth/                # Inicio de sesión
-│   │       ├── organizacion/        # Departamentos y colaboradores
-│   │       ├── cargos/              # Cargos y funciones
-│   │       └── cierres_caja/        # Detector de anomalías en cierres de caja
-│   ├── tests/                       # Pruebas automatizadas
-│   └── requirements.txt             # Dependencias de Python
-├── frontend/
-│   └── src/
-│       ├── api/                     # Comunicación con el backend
-│       ├── auth/                    # Sesión del usuario y rutas protegidas
-│       ├── modules/                 # Pantallas de cada módulo
-│       ├── components/              # Componentes compartidos
-│       └── App.tsx                  # Definición de rutas
-├── database/
-│   ├── schema.sql                   # Creación de tablas, llaves y restricciones
-│   └── seed.sql                     # Datos ficticios de prueba
-├── docs/
-│   ├── decisiones-tecnicas.md       # Justificación de decisiones del proyecto
-│   └── registro-ai.md               # Registro de uso de inteligencia artificial
-├── .env.example                     # Plantilla de variables de entorno
-├── .gitignore                       # Archivos excluidos del control de versiones
-└── README.md                        # Este archivo
-```
-
-Cada módulo del backend contiene:
-
-| Archivo | Responsabilidad |
+| Rol | Acceso |
 |---|---|
-| `router.py` | Endpoints HTTP del módulo |
-| `service.py` | Lógica de negocio |
-| `repository.py` | Acceso a la base de datos |
-| `models.py` | Representación de las tablas |
-| `schemas.py` | Validación de datos de entrada y salida |
+| Administrador | Toda la información del portal y todos los módulos. |
+| Jefe de departamento | Información de su departamento. Si su departamento es Contraloría, también registra cierres y gestiona alertas. |
+| Colaborador | Directorio de su departamento y su propio perfil. Si pertenece a Contraloría, puede consultar cierres y alertas, pero no modificarlos. |
 
-## Flujo típico de una petición protegida
+Los permisos se validan en el backend; el frontend solo oculta lo que el usuario no puede usar.
 
-1. El usuario inicia sesión en `POST /auth/login`
-   - Se valida la contraseña contra su hash almacenado
-   - Se emite un token de sesión
-2. El usuario consulta, por ejemplo, los colaboradores de un departamento
-   - Se verifica que el token sea válido
-   - Se verifica su rol y su departamento
-   - Si no tiene permiso, la API responde **403 Prohibido**, sin revelar datos
-   - Si tiene permiso, el servicio obtiene los datos a través del repositorio
-3. Toda gestión de una alerta queda registrada en el historial: quién, cuándo y qué cambió
+## Tecnologías
 
-## Requisitos previos
+- **Base de datos:** PostgreSQL
+- **Backend:** Python, FastAPI, SQLAlchemy, Pydantic, PyJWT, pwdlib (Argon2)
+- **Frontend:** React, TypeScript, Vite, Material UI
+- **Pruebas:** pytest
 
-Instala lo siguiente antes de comenzar:
+## Requisitos
 
-- [Git](https://git-scm.com/)
-- [Python](https://www.python.org/) 3.11 o superior
-- [Node.js](https://nodejs.org/) (versión LTS)
-- [PostgreSQL](https://www.postgresql.org/) 15 o superior
+- PostgreSQL 15 o superior
+- Python 3.11 o superior
+- Node.js 20.19 o superior (o 22.12 o superior)
+- Git
 
 ## Instalación y ejecución local
 
+Los comandos están escritos para PowerShell en Windows. En Linux o macOS, cambia la activación
+del entorno virtual por `source .venv/bin/activate`.
+
 ### 1. Clonar el repositorio
 
-```bash
-git clone https://github.com/mvfuentes24/portal-vp-finanza.git
-cd portal-vp-finanza
+```powershell
+git clone https://github.com/<usuario>/<repositorio>.git
+cd <repositorio>
 ```
 
 ### 2. Crear la base de datos
 
-Conéctate a PostgreSQL como administrador:
+Conéctate a PostgreSQL con un usuario administrador (por ejemplo `postgres`):
 
-```bash
+```powershell
 psql -U postgres
 ```
 
-Ejecuta los siguientes comandos. Cuando se solicite, define una contraseña para el usuario `portal_app` y anótala:
+Crea el usuario de la aplicación y la base de datos. Reemplaza `tu_contraseña` por una propia:
 
 ```sql
-CREATE ROLE portal_app WITH LOGIN;
-\password portal_app
-CREATE DATABASE portal_finanzas WITH OWNER = portal_app ENCODING = 'UTF8' TEMPLATE = template0;
+CREATE ROLE portal_app WITH LOGIN PASSWORD 'tu_contraseña';
+CREATE DATABASE portal_finanzas OWNER portal_app ENCODING 'UTF8' TEMPLATE template0;
 \q
 ```
 
-### 3. Configurar las variables de entorno
+La aplicación usa el usuario `portal_app`, sin privilegios de administrador, en lugar de `postgres`.
 
-Crea el archivo `.env` a partir de la plantilla:
+### 3. Crear las tablas y cargar los datos de ejemplo
 
-```bash
-# Windows (PowerShell)
-Copy-Item .env.example .env
+Desde la raíz del repositorio:
 
-# macOS / Linux
-cp .env.example .env
-```
-
-Abre `.env` y completa:
-
-| Variable | Valor |
-|---|---|
-| `DB_PASSWORD` | La contraseña definida para `portal_app` en el paso 2 |
-| `JWT_SECRET_KEY` | Una cadena aleatoria larga (ver comando abajo) |
-
-Las demás variables ya tienen valores por defecto válidos para ejecución local.
-
-Para generar `JWT_SECRET_KEY`:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(48))"
-```
-
-### 4. Crear las tablas y cargar los datos
-
-```bash
+```powershell
 psql -U portal_app -d portal_finanzas -f database/schema.sql
 psql -U portal_app -d portal_finanzas -f database/seed.sql
 ```
 
-### 5. Levantar el backend
+### 4. Configurar las variables de entorno
 
-Desde la raíz del proyecto, crea el entorno virtual:
+```powershell
+Copy-Item .env.example .env
+```
 
-```bash
+Abre `.env` y completa:
+
+- `DB_PASSWORD`: la contraseña que definiste para `portal_app`.
+- `JWT_SECRET_KEY`: una clave aleatoria larga. Puedes generarla con
+  `python -c "import secrets; print(secrets.token_urlsafe(64))"`.
+- `DEMO_PASSWORD`: la contraseña que tendrán los usuarios de prueba (mínimo 12 caracteres).
+
+El archivo `.env` no se sube al repositorio.
+
+### 5. Instalar el backend y preparar los datos
+
+```powershell
 cd backend
 python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements-dev.txt
+python -m scripts.crear_usuarios
+python -m scripts.analizar_cierres
 ```
 
-Activa el entorno virtual:
+- `crear_usuarios` crea los usuarios de prueba con la contraseña de `DEMO_PASSWORD`.
+- `analizar_cierres` revisa los cierres cargados y genera sus alertas.
 
-```bash
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+Los dos scripts se pueden ejecutar más de una vez sin duplicar datos.
 
-# macOS / Linux
-source .venv/bin/activate
-```
+Si PowerShell bloquea la activación del entorno virtual, ejecuta una vez
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
-> En Windows, si PowerShell indica que la ejecución de scripts está deshabilitada, ejecuta una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` y vuelve a activar el entorno.
+### 6. Iniciar el backend
 
-Instala las dependencias e inicia el servidor:
+Con el entorno virtual activo, dentro de `backend`:
 
-```bash
-pip install -r requirements.txt
+```powershell
 uvicorn app.main:app --reload
 ```
 
-La API queda disponible en `http://localhost:8000`. Para verificar que funciona y se conecta a la base de datos, abre `http://localhost:8000/health`; la documentación interactiva está en `http://localhost:8000/docs`.
+La API queda en http://localhost:8000. Su documentación interactiva está en http://localhost:8000/docs.
 
-Crea los usuarios de prueba (usan la contraseña definida en `DEMO_PASSWORD`, mínimo 12 caracteres):
+### 7. Instalar e iniciar el frontend
 
-```bash
-python -m scripts.crear_usuarios
+En otra terminal, desde la raíz del repositorio:
+
+```powershell
+cd frontend
+npm install
+npm run dev
 ```
 
-### 6. Levantar el frontend
-
-*Pendiente.*
-
-### 7. Abrir el portal
-
-*Pendiente.* Ingresa con alguno de los [usuarios de prueba](#usuarios-de-prueba).
+Abre http://localhost:5173 e inicia sesión con alguno de los usuarios de prueba.
 
 ## Usuarios de prueba
 
-*Pendiente.* Se documentarán credenciales ficticias para cada rol.
+Todos usan la contraseña definida en `DEMO_PASSWORD`.
 
-## Documentación de la API
-
-Con el backend en ejecución, la documentación interactiva está disponible en `http://localhost:8000/docs`.
+| Correo | Rol | Departamento |
+|---|---|---|
+| elisa.montero@vpfinanzas.example | Administrador | Vicepresidencia (Vicepresidente de Finanzas) |
+| andrea.salazar@vpfinanzas.example | Jefe de departamento | Planificación Financiera |
+| patricia.montilla@vpfinanzas.example | Jefe de departamento | Tesorería |
+| carolina.briceno@vpfinanzas.example | Jefe de departamento | Contraloría |
+| gustavo.linares@vpfinanzas.example | Jefe de departamento | Contabilidad |
+| mariana.quintero@vpfinanzas.example | Colaborador | Planificación Financiera |
+| diego.paredes@vpfinanzas.example | Colaborador | Tesorería |
+| hector.figueroa@vpfinanzas.example | Colaborador | Contraloría |
+| pablo.acosta@vpfinanzas.example | Colaborador | Contabilidad |
+| emilio.fajardo@vpfinanzas.example | Colaborador inactivo | Contraloría (no puede iniciar sesión) |
 
 ## Pruebas
 
-*Pendiente.*
+Con el entorno virtual activo, dentro de `backend`:
 
-## Seguridad
+```powershell
+pytest
+```
 
-- Credenciales y claves gestionadas mediante variables de entorno, fuera del código fuente
-- Conexión a la base de datos con un usuario de privilegios mínimos
-- Contraseñas almacenadas como hash, nunca en texto plano *(en desarrollo)*
-- Control de acceso verificado en cada endpoint del backend *(en desarrollo)*
+Las pruebas cubren el inicio de sesión, el control de acceso por rol, las reglas de detección y
+la gestión de alertas. Cada prueba corre dentro de una transacción que se deshace al terminar,
+así que no modifican los datos de la base local. Necesitan los datos de ejemplo y los usuarios de
+prueba ya creados (pasos 3 y 5).
 
-El detalle de cada decisión está en [docs/decisiones-tecnicas.md](docs/decisiones-tecnicas.md).
+## Estructura del proyecto
 
-## Documentación adicional
+```
+├── database/
+│   ├── schema.sql          Tablas, restricciones e índices
+│   └── seed.sql            Datos ficticios de ejemplo
+├── backend/
+│   ├── app/
+│   │   ├── core/           Configuración, base de datos, seguridad y permisos
+│   │   └── modules/        auth, organizacion, cargos, cierres_caja
+│   ├── scripts/            Creación de usuarios y análisis inicial de cierres
+│   └── tests/
+├── frontend/
+│   └── src/
+│       ├── api/            Cliente HTTP y tipos
+│       ├── auth/           Sesión del usuario
+│       ├── components/     Componentes compartidos
+│       └── modules/        Una carpeta por pantalla o módulo
+├── docs/
+│   ├── decisiones-tecnicas.md
+│   └── registro-ai.md
+└── .env.example
+```
 
-- [Decisiones técnicas](docs/decisiones-tecnicas.md): stack, modelo de datos, proceso de negocio, seguridad y limitaciones
-- [Registro de uso de AI](docs/registro-ai.md): prompts principales y sugerencias aceptadas, modificadas y rechazadas
+Cada módulo del backend se divide en `router` (endpoints), `service` (reglas de negocio),
+`repository` (consultas), `models` (tablas) y `schemas` (datos de entrada y salida).
 
-## Autora
+## Documentación
 
-**Maria Victoria Fuentes Gutierrez** — [@mvfuentes24](https://github.com/mvfuentes24)
-Estudiante de Ingeniería Informática, Universidad Católica Andrés Bello (UCAB).
-
----
-
-> **Nota sobre los datos:** toda la información de este proyecto es completamente ficticia. No se utilizan nombres, documentos de identidad, correos ni datos de personas o empresas reales.
+- [Decisiones técnicas](docs/decisiones-tecnicas.md)
+- [Registro de uso de AI](docs/registro-ai.md)
