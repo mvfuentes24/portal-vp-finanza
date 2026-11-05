@@ -6,8 +6,10 @@ de prueba ya creados (database/seed.sql y scripts/crear_usuarios.py).
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.database import engine, get_db
 from app.main import app
 
 ADMIN = "elisa.montero@vpfinanzas.example"            # Vicepresidente de Finanzas
@@ -20,6 +22,34 @@ CONTRALORIA = 3
 CARGO_VICEPRESIDENTE = 17
 CARGO_TESORERIA_SENIOR = 6
 CARGO_CONTRALORIA_SENIOR = 10
+
+
+JEFE_CONTRALORIA = "carolina.briceno@vpfinanzas.example"
+COLAB_CONTRALORIA = "hector.figueroa@vpfinanzas.example"
+
+
+@pytest.fixture(autouse=True)
+def conexion():
+    """Cada prueba corre dentro de una transacción que se deshace al terminar.
+
+    Así las pruebas pueden registrar cierres y gestionar alertas sin modificar
+    los datos reales de la base de datos local, y se pueden repetir siempre.
+    """
+    conexion = engine.connect()
+    transaccion = conexion.begin()
+
+    def _get_db_de_prueba():
+        db = Session(bind=conexion, join_transaction_mode="create_savepoint", expire_on_commit=False)
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = _get_db_de_prueba
+    yield conexion
+    app.dependency_overrides.clear()
+    transaccion.rollback()
+    conexion.close()
 
 
 def _password() -> str:
@@ -53,3 +83,13 @@ def jefe_tesoreria() -> TestClient:
 @pytest.fixture
 def colab_tesoreria() -> TestClient:
     return iniciar_sesion(COLAB_TESORERIA)
+
+
+@pytest.fixture
+def jefe_contraloria() -> TestClient:
+    return iniciar_sesion(JEFE_CONTRALORIA)
+
+
+@pytest.fixture
+def colab_contraloria() -> TestClient:
+    return iniciar_sesion(COLAB_CONTRALORIA)

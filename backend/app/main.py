@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.modules.auth.router import router as auth_router
 from app.modules.cargos.router import router as cargos_router
+from app.modules.cierres_caja.router import router as cierres_router
 from app.modules.organizacion.router import router as organizacion_router
 
 app = FastAPI(
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(organizacion_router)
 app.include_router(cargos_router)
+app.include_router(cierres_router)
 
 
 @app.get("/health", tags=["Sistema"])
