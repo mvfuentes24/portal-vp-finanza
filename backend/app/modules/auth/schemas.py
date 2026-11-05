@@ -18,3 +18,7 @@ class UsuarioActualOut(BaseModel):
     cargo: str
     departamento_id: int | None
     departamento: str | None
+    # Lo decide el backend con las mismas reglas que protegen los endpoints;
+    # el frontend solo lo usa para mostrar u ocultar opciones.
+    modulos: list[str]
+    puede_gestionar_cierres: bool

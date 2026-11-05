@@ -2,6 +2,7 @@
 
 from sqlalchemy.orm import Session
 
+from app.core.permissions import modulos_del_usuario, puede_gestionar_cierres
 from app.core.security import HASH_FICTICIO, verify_password
 from app.modules.auth import repository
 from app.modules.auth.models import Usuario
@@ -37,4 +38,6 @@ def a_usuario_actual(usuario: Usuario) -> UsuarioActualOut:
         cargo=colaborador.cargo.nombre,
         departamento_id=departamento.id if departamento else None,
         departamento=departamento.nombre if departamento else None,
+        modulos=modulos_del_usuario(usuario),
+        puede_gestionar_cierres=puede_gestionar_cierres(usuario),
     )

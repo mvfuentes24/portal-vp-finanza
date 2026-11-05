@@ -41,3 +41,17 @@ def test_token_alterado_es_rechazado(jefe_tesoreria):
     token = jefe_tesoreria.cookies.get("sesion")
     cliente = TestClient(app, cookies={"sesion": token + "x"})
     assert cliente.get("/auth/me").status_code == 401
+
+
+def test_me_informa_los_modulos_segun_el_rol(admin, jefe_tesoreria, colab_contraloria):
+    yo_admin = admin.get("/auth/me").json()
+    assert yo_admin["modulos"] == ["organizacion", "cargos", "cierres_caja"]
+    assert yo_admin["puede_gestionar_cierres"] is True
+
+    yo_tesoreria = jefe_tesoreria.get("/auth/me").json()
+    assert yo_tesoreria["modulos"] == ["organizacion", "cargos"]
+    assert yo_tesoreria["puede_gestionar_cierres"] is False
+
+    yo_contraloria = colab_contraloria.get("/auth/me").json()
+    assert "cierres_caja" in yo_contraloria["modulos"]
+    assert yo_contraloria["puede_gestionar_cierres"] is False

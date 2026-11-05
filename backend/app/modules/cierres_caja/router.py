@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.permissions import ADMINISTRADOR, JEFE, PROHIBIDO
+from app.core.permissions import PROHIBIDO, puede_consultar_cierres, puede_gestionar_cierres
 from app.modules.auth.dependencies import get_usuario_actual
 from app.modules.auth.models import Usuario
 from app.modules.cierres_caja import service
@@ -25,26 +25,19 @@ from app.modules.cierres_caja.schemas import (
     TiendaOut,
 )
 
-DEPARTAMENTO_RESPONSABLE = "Contraloría"
-
 router = APIRouter(prefix="/cierres-caja", tags=["Cierres de caja"])
 
 
-def _es_de_contraloria(usuario: Usuario) -> bool:
-    departamento = usuario.colaborador.cargo.departamento
-    return departamento is not None and departamento.nombre == DEPARTAMENTO_RESPONSABLE
-
-
 def puede_consultar(usuario: Usuario = Depends(get_usuario_actual)) -> Usuario:
-    if usuario.rol == ADMINISTRADOR or _es_de_contraloria(usuario):
-        return usuario
-    raise PROHIBIDO
+    if not puede_consultar_cierres(usuario):
+        raise PROHIBIDO
+    return usuario
 
 
 def puede_gestionar(usuario: Usuario = Depends(get_usuario_actual)) -> Usuario:
-    if usuario.rol == ADMINISTRADOR or (usuario.rol == JEFE and _es_de_contraloria(usuario)):
-        return usuario
-    raise PROHIBIDO
+    if not puede_gestionar_cierres(usuario):
+        raise PROHIBIDO
+    return usuario
 
 
 # --- Catálogos para el formulario de registro ---

@@ -58,3 +58,31 @@ def verificar_acceso_departamento(usuario: Usuario, departamento_id: int | None)
         return
     if departamento_id is None or departamento_id != departamento_del_usuario(usuario):
         raise PROHIBIDO
+
+
+# --- Módulo de cierres de caja (pertenece a Contraloría) ---
+
+DEPARTAMENTO_CIERRES = "Contraloría"
+
+
+def _es_de_contraloria(usuario: Usuario) -> bool:
+    departamento = usuario.colaborador.cargo.departamento
+    return departamento is not None and departamento.nombre == DEPARTAMENTO_CIERRES
+
+
+def puede_consultar_cierres(usuario: Usuario) -> bool:
+    """Administradora y cualquier usuario de Contraloría."""
+    return es_administrador(usuario) or _es_de_contraloria(usuario)
+
+
+def puede_gestionar_cierres(usuario: Usuario) -> bool:
+    """Registrar cierres y gestionar alertas: administradora y jefe de Contraloría."""
+    return es_administrador(usuario) or (usuario.rol == JEFE and _es_de_contraloria(usuario))
+
+
+def modulos_del_usuario(usuario: Usuario) -> list[str]:
+    """Módulos del portal visibles para el usuario (el frontend arma el menú con esto)."""
+    modulos = ["organizacion", "cargos"]
+    if puede_consultar_cierres(usuario):
+        modulos.append("cierres_caja")
+    return modulos

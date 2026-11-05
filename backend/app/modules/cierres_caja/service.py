@@ -129,6 +129,7 @@ def registrar_cierre(db: Session, usuario: Usuario, datos: CierreIn) -> CierreOu
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "La fecha del cierre no puede ser futura")
 
     cierre = CierreCaja(
+        # La tienda se registra aparte: un cajero puede cubrir una tienda distinta a la asignada
         tienda_id=datos.tienda_id,
         cajero_id=datos.cajero_id,
         fecha=datos.fecha,
