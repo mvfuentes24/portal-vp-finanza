@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.modules.auth.router import router as auth_router
+from app.modules.cargos.router import router as cargos_router
+from app.modules.organizacion.router import router as organizacion_router
 
 app = FastAPI(
     title="Portal VP de Finanzas",
@@ -25,6 +27,8 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(organizacion_router)
+app.include_router(cargos_router)
 
 
 @app.get("/health", tags=["Sistema"])
