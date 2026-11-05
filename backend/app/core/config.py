@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# backend/app/core/config.py -> la raíz del repositorio está tres niveles arriba
+# parents[0]=core, [1]=app, [2]=backend, [3]=raíz del repositorio (donde está el .env)
 RAIZ_PROYECTO = Path(__file__).resolve().parents[3]
 
 
@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     jwt_secret_key: SecretStr
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    # True en producción (HTTPS): la cookie de sesión solo viaja cifrada
+    cookie_secure: bool = False
+
+    # Contraseña de los usuarios de prueba. Solo la usa el script
+    # scripts/crear_usuarios.py; la aplicación no la necesita para funcionar.
+    demo_password: SecretStr | None = None
 
     # Frontend autorizado (CORS)
     frontend_origin: str = "http://localhost:5173"

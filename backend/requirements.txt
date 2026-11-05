@@ -8,3 +8,7 @@ psycopg[binary]>=3.2.10
 
 # Configuración desde variables de entorno
 pydantic-settings>=2.5
+
+# Seguridad: hash de contraseñas (Argon2) y tokens de sesión (JWT)
+pwdlib[argon2]>=0.2
+pyjwt>=2.8

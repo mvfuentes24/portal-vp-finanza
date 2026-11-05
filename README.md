@@ -224,6 +224,12 @@ uvicorn app.main:app --reload
 
 La API queda disponible en `http://localhost:8000`. Para verificar que funciona y se conecta a la base de datos, abre `http://localhost:8000/health`; la documentación interactiva está en `http://localhost:8000/docs`.
 
+Crea los usuarios de prueba (usan la contraseña definida en `DEMO_PASSWORD`, mínimo 12 caracteres):
+
+```bash
+python -m scripts.crear_usuarios
+```
+
 ### 6. Levantar el frontend
 
 *Pendiente.*
